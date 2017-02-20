@@ -9,6 +9,8 @@ from tensorflow.contrib.framework.python.ops import add_arg_scope
 def int_shape(x):
     return list(map(int, x.get_shape()))
 
+
+
 def concat_elu(x):
     """ like concatenated ReLU (http://arxiv.org/abs/1603.05201), but then with ELU """
     axis = len(x.get_shape())-1
@@ -141,9 +143,10 @@ def get_name(layer_name, counters):
     return name
 
 @add_arg_scope
-def dense(x, num_units, nonlinearity=None, init_scale=1., counters={}, init=False, ema=None, **kwargs):
+def dense(x, num_units, nonlinearity=None, init_scale=1., counters={}, init=False, ema=None, name=None, **kwargs):
     ''' fully connected layer '''
-    name = get_name('dense', counters)
+    if name is None:
+        name = get_name('dense', counters)
     with tf.variable_scope(name):
         if init:
             # data based initialization of parameters
@@ -174,9 +177,10 @@ def dense(x, num_units, nonlinearity=None, init_scale=1., counters={}, init=Fals
             return x
 
 @add_arg_scope
-def conv2d(x, num_filters, filter_size=[3,3], stride=[1,1], pad='SAME', nonlinearity=None, init_scale=1., counters={}, init=False, ema=None, **kwargs):
+def conv2d(x, num_filters, filter_size=[3,3], stride=[1,1], pad='SAME', nonlinearity=None, init_scale=1., counters={}, init=False, ema=None, name=None, **kwargs):
     ''' convolutional layer '''
-    name = get_name('conv2d', counters)
+    if name is None:
+        name = get_name('conv2d', counters)
     with tf.variable_scope(name):
         if init:
             # data based initialization of parameters

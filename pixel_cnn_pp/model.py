@@ -5,6 +5,17 @@ The core Pixel-CNN model
 import tensorflow as tf
 from tensorflow.contrib.framework.python.ops import arg_scope
 import pixel_cnn_pp.nn as nn
+from pixel_cnn_pp.encoder import ConvolutionalEncoder
+
+def model_spec_encoder(encoder_X, init=False, ema=None, dropout_p=0.5, nr_resnet=5, nr_filters=160, nr_logistic_mix=10, resnet_nonlinearity='concat_elu', reg_type='None', latent_dim=20):
+    with arg_scope([nn.conv2d, nn.deconv2d, nn.gated_resnet, nn.dense], init=init, ema=ema, dropout_p=dropout_p):
+        encoder = ConvolutionalEncoder(encoder_X, reg_type, latent_dim)
+    return encoder
+
+def model_spec_with_autoencoder(x, encoder_X, init=False, ema=None, dropout_p=0.5, nr_resnet=5, nr_filters=160, nr_logistic_mix=10, resnet_nonlinearity='concat_elu', reg_type='None', latent_dim=20):
+    with arg_scope([nn.conv2d, nn.deconv2d, nn.gated_resnet, nn.dense], init=init, ema=ema, dropout_p=dropout_p):
+        encoder = ConvolutionalEncoder(encoder_X, reg_type, latent_dim)
+    return model_spec(x, encoder.pred, init, ema, dropout_p, nr_resnet, nr_filters, nr_logistic_mix, resnet_nonlinearity), encoder
 
 def model_spec(x, h=None, init=False, ema=None, dropout_p=0.5, nr_resnet=5, nr_filters=160, nr_logistic_mix=10, resnet_nonlinearity='concat_elu'):
     """
@@ -82,4 +93,5 @@ def model_spec(x, h=None, init=False, ema=None, dropout_p=0.5, nr_resnet=5, nr_f
             assert len(ul_list) == 0
 
             return x_out
+
 
