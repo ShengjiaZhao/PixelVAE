@@ -18,7 +18,7 @@ import scipy.misc
 
 import pixel_cnn_pp.nn as nn
 import pixel_cnn_pp.plotting as plotting
-from pixel_cnn_pp.model import model_spec, model_spec_with_autoencoder, model_spec_encoder
+from pixel_cnn_pp.model import model_spec, model_spec_encoder
 import data.cifar10_data as cifar10_data
 import data.imagenet_data as imagenet_data
 from pixel_cnn_pp.encoder import compute_mutual_information, ComputeLL
@@ -47,7 +47,7 @@ parser.add_argument('-b', '--batch_size', type=int, default=12, help='Batch size
 parser.add_argument('-a', '--init_batch_size', type=int, default=80, help='How much data to use for data-dependent initialization.')
 parser.add_argument('-p', '--dropout_p', type=float, default=0.5, help='Dropout strength (i.e. 1 - keep_prob). 0 = No dropout, higher = more dropout.')
 parser.add_argument('-x', '--max_epochs', type=int, default=5000, help='How many epochs to run in total?')
-parser.add_argument('-g', '--nr_gpu', type=int, default=4, help='How many GPUs to distribute the training across?')
+parser.add_argument('-g', '--nr_gpu', type=int, default=2, help='How many GPUs to distribute the training across?')
 # evaluation
 parser.add_argument('--polyak_decay', type=float, default=0.9995, help='Exponential decay rate of the sum of previous model iterates during Polyak averaging')
 # reproducibility
@@ -57,7 +57,7 @@ print('input args:\n', json.dumps(vars(args), indent=4, separators=(',',':'))) #
 
 # python train.py --use_autoencoder --save_dir=elbo --name=elbo --reg_type=elbo
 # python train.py --use_autoencoder --save_dir=no_reg --name=no_reg --reg_type=no_reg
-# os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
 
 latent_dim = 20
 args.latent_dim = latent_dim
@@ -298,7 +298,7 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placem
             file_logger.flush()
 
         # generate samples from the model
-        if args.use_autoencoder and epoch % 20 == 0:
+        if args.use_autoencoder and (epoch+1) % 20 == 0:
             print("Generating MC")
             start_time = time.time()
             sample_history = sample_from_markov_chain(sess)
