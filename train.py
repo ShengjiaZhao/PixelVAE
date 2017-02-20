@@ -59,7 +59,7 @@ print('input args:\n', json.dumps(vars(args), indent=4, separators=(',',':'))) #
 # python train.py --use_autoencoder --save_dir=no_reg --name=no_reg --reg_type=no_reg
 os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
 
-latent_dim = 20
+latent_dim = 30
 args.latent_dim = latent_dim
 # -----------------------------------------------------------------------------
 # fix random seed for reproducibility
@@ -123,6 +123,7 @@ maintain_averages_op = tf.group(ema.apply(all_params))
 grads = []
 loss_gen = []
 loss_gen_reg = []
+loss_gen_elbo = []
 loss_gen_test = []
 for i in range(args.nr_gpu):
     with tf.device('/gpu:%d' % i):
@@ -131,6 +132,7 @@ for i in range(args.nr_gpu):
             encoder = encoder_model(encoder_x[i], ema=None, dropout_p=args.dropout_p, **encoder_opt)
             gen_par = model(xs[i], encoder.pred, ema=None, dropout_p=args.dropout_p, **model_opt)
             loss_gen_reg.append(encoder.reg_loss)
+            loss_gen_elbo.append(encoder.elbo_loss)
         else:
             gen_par = model(xs[i], hs[i], ema=None, dropout_p=args.dropout_p, **model_opt)
         loss_gen.append(nn.discretized_mix_logistic_loss(xs[i], gen_par))
@@ -156,12 +158,14 @@ with tf.device('/gpu:0'):
         loss_gen_test[0] += loss_gen_test[i]
         if args.use_autoencoder:
             loss_gen_reg[0] += loss_gen_reg[i]
+            loss_gen_elbo[0] += loss_gen_elbo[i]
         for j in range(len(grads[0])):
             grads[0][j] += grads[i][j]
     # training op
     tf.summary.scalar('ll_loss', loss_gen[0])
     if args.use_autoencoder:
         tf.summary.scalar('reg', loss_gen_reg[0])
+        tf.summary.scalar('elbo', loss_gen_elbo[0])
     optimizer = tf.group(nn.adam_updates(all_params, grads[0], lr=tf_lr, mom1=0.95, mom2=0.9995), maintain_averages_op)
 
 # convert loss to bits/dim

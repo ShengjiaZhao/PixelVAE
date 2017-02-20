@@ -49,6 +49,8 @@ class ConvolutionalEncoder(object):
         else:
             print("Unknown regularization %s" % str(reg_type))
             exit(0)
+        self.elbo_loss = tf.reduce_mean(-tf.log(self.stddev) + 0.5 * tf.square(self.stddev) +
+                                        0.5 * tf.square(self.mean) - 0.5)
 
 class ComputeLL:
     def __init__(self, latent_dim):
