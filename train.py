@@ -39,6 +39,7 @@ parser.add_argument('-z', '--resnet_nonlinearity', type=str, default='concat_elu
 parser.add_argument('-c', '--class_conditional', dest='class_conditional', action='store_true', help='Condition generative model on labels?')
 parser.add_argument('-ae', '--use_autoencoder', dest='use_autoencoder', action='store_true', help='Use autoencoders?')
 parser.add_argument('-reg', '--reg_type', type=str, default='elbo', help='Type of regularization to use for autoencoder')
+parser.add_argument('-cs', '--chain_step', type=int, default=10, help='Steps to run Markov chain for sampling')
 # optimization
 parser.add_argument('-l', '--learning_rate', type=float, default=0.001, help='Base learning rate')
 parser.add_argument('-e', '--lr_decay', type=float, default=0.999995, help='Learning rate decay, applied every step of the optimization')
@@ -207,7 +208,7 @@ def sample_from_markov_chain(sess):
     history = []
     encoder_current = [np.random.uniform(0.0, 1.0, (args.batch_size,) + obs_shape) for i in range(args.nr_gpu)]
     latent_op = [encoder.pred for encoder in encoder_list]
-    num_steps = 2
+    num_steps = args.chain_step
     history.append(np.concatenate(encoder_current, axis=0))
 
     for step in range(num_steps):

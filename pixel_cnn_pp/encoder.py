@@ -71,7 +71,7 @@ class ComputeLL:
 def compute_mutual_information(data, args, sess, encoder_list, ll_compute):
     print("Evaluating Mutual Information")
     start_time = time.time()
-    num_batch = 500
+    num_batch = 800
     z_batch_cnt = 10  # This must divide num_batch
     dist_batch_cnt = 10
     assert num_batch % z_batch_cnt == 0
