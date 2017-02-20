@@ -59,7 +59,7 @@ print('input args:\n', json.dumps(vars(args), indent=4, separators=(',',':'))) #
 # python train.py --use_autoencoder --save_dir=no_reg --name=no_reg --reg_type=no_reg
 os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
 
-latent_dim = 30
+latent_dim = 20
 args.latent_dim = latent_dim
 # -----------------------------------------------------------------------------
 # fix random seed for reproducibility
