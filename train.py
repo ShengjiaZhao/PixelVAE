@@ -210,9 +210,12 @@ def sample_from_decoder_prior(sess):
                 x_gen[i][:,yi,xi,:] = new_x_gen_np[i][:,yi,xi,:]
     return np.concatenate(x_gen, axis=0)
 
-def sample_from_markov_chain(sess):
+def sample_from_markov_chain(sess, initial=None):
     history = []
-    encoder_current = [np.random.uniform(0.0, 1.0, (args.batch_size,) + obs_shape) for i in range(args.nr_gpu)]
+    if initial is None:
+        encoder_current = [np.random.uniform(0.0, 1.0, (args.batch_size,) + obs_shape) for i in range(args.nr_gpu)]
+    else:
+        encoder_current = np.split(initial, args.nr_gpu)
     latent_op = [encoder.pred for encoder in encoder_list]
     num_steps = args.chain_step
     history.append(np.concatenate(encoder_current, axis=0))
@@ -232,9 +235,8 @@ def sample_from_markov_chain(sess):
                     x_gen[i][:,yi,xi,:] = new_x_gen_np[i][:,yi,xi,:]
         history.append(np.concatenate(x_gen, axis=0))
         encoder_current = x_gen
-        print("%d (%fs)" % (step, time.time() - start_time)),
+        print("%d (%fs)" % (step, time.time() - start_time))
         sys.stdout.flush()
-    print("")
     return history
 
 def plot_markov_chain(history):
@@ -308,9 +310,12 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placem
         if args.use_autoencoder and epoch % 20 == 0:
             print("Generating MC")
             start_time = time.time()
-            sample_history = sample_from_markov_chain(sess)
-            sample_plot = plot_markov_chain(sample_history)
-            scipy.misc.imsave(os.path.join(args.save_dir, '%s_mc%d.png' % (args.data_set, epoch)), sample_plot)
+            initial = np.random.uniform(0.0, 1.0, (args.batch_size * args.nr_gpu,) + obs_shape)
+            for mc_step in range(100):
+                sample_history = sample_from_markov_chain(sess, initial)
+                initial = sample_history[-1]
+                sample_plot = plot_markov_chain(sample_history)
+                scipy.misc.imsave(os.path.join(args.save_dir, '%s_mc%d.png' % (args.data_set, mc_step)), sample_plot)
             print("Finished, time elapsed %fs" % (time.time() - start_time))
             exit(0)
 
