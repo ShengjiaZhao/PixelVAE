@@ -48,6 +48,7 @@ parser.add_argument('-a', '--init_batch_size', type=int, default=80, help='How m
 parser.add_argument('-p', '--dropout_p', type=float, default=0.5, help='Dropout strength (i.e. 1 - keep_prob). 0 = No dropout, higher = more dropout.')
 parser.add_argument('-x', '--max_epochs', type=int, default=5000, help='How many epochs to run in total?')
 parser.add_argument('-g', '--nr_gpu', type=int, default=2, help='How many GPUs to distribute the training across?')
+parser.add_argument('-gid', '--gpu_id', type=str, default='', help='Which GPUs to use')
 # evaluation
 parser.add_argument('--polyak_decay', type=float, default=0.9995, help='Exponential decay rate of the sum of previous model iterates during Polyak averaging')
 # reproducibility
@@ -57,7 +58,8 @@ print('input args:\n', json.dumps(vars(args), indent=4, separators=(',',':'))) #
 
 # python train.py --use_autoencoder --save_dir=elbo --name=elbo --reg_type=elbo
 # python train.py --use_autoencoder --save_dir=no_reg --name=no_reg --reg_type=no_reg
-os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
+if args.gpu_id != "":
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 
 latent_dim = 20
 args.latent_dim = latent_dim
