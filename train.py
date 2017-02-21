@@ -302,13 +302,14 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placem
             file_logger.flush()
 
         # generate samples from the model
-        if args.use_autoencoder and (epoch+1) % 20 == 0:
+        if args.use_autoencoder and epoch % 20 == 0:
             print("Generating MC")
             start_time = time.time()
             sample_history = sample_from_markov_chain(sess)
             sample_plot = plot_markov_chain(sample_history)
             scipy.misc.imsave(os.path.join(args.save_dir, '%s_mc%d.png' % (args.data_set, epoch)), sample_plot)
             print("Finished, time elapsed %fs" % (time.time() - start_time))
+            exit(0)
 
         # generate samples from the model
         if epoch % 2 == 0:
