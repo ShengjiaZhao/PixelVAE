@@ -233,6 +233,7 @@ def sample_from_markov_chain(sess):
         history.append(np.concatenate(x_gen, axis=0))
         encoder_current = x_gen
         print("%d (%fs)" % (step, time.time() - start_time)),
+        sys.stdout.flush()
     print("")
     return history
 
